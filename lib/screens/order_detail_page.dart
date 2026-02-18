@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/palette.dart';
 import '../services/api_services.dart';
 import '../models/product.dart';
@@ -34,7 +35,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       );
     });
     try {
-      final json = await ApiService.updateOrderQuantity(_order.id, itemId, newQty);
+      final json = await ApiService.updateOrderQuantity(
+        _order.id,
+        itemId,
+        newQty,
+      );
       await OrdersCache.clearPagination();
       if (mounted) {
         setState(() {
@@ -44,9 +49,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _order = originalOrder);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -72,9 +77,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _order = originalOrder);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -99,9 +104,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -115,10 +120,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         title: const Text("Cancel Order?"),
         content: const Text("Are you sure you want to cancel this order?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("No")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("No"),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Yes, Cancel", style: TextStyle(color: Colors.red)),
+            child: const Text(
+              "Yes, Cancel",
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -139,9 +150,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to cancel: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to cancel: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -157,12 +168,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     return Scaffold(
       backgroundColor: kBgBottom,
       appBar: AppBar(
-        title: Text('Order #${_order.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Order #${_order.id}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           if (_isUpdating)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
             ),
         ],
       ),
@@ -182,16 +200,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               ),
               child: Column(
                 children: [
-                   _statusIcon(_order.status),
+                  _statusIcon(_order.status),
                   const SizedBox(height: 12),
                   Text(
                     _order.statusDisplay.toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1.2),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                   if (_order.createdAt != null)
                     Text(
                       'Placed on ${_order.createdAt!.toLocal().toString().split('.')[0]}',
-                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 13,
+                      ),
                     ),
                 ],
               ),
@@ -202,23 +228,45 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (isReady) _infoBanner('Your order is ready — collect it within 30 mins.', kPrimarySoft, kPrimary),
-                  if (isConfirmed) _infoBanner('Order Confirmed! Please pay to proceed.', Colors.blue.shade50, Colors.blue),
+                  if (isReady)
+                    _infoBanner(
+                      'Your order is ready — collect it within 30 mins.',
+                      kPrimarySoft,
+                      kPrimary,
+                    ),
+                  if (isConfirmed)
+                    _infoBanner(
+                      'Order Confirmed! Please pay to proceed.',
+                      Colors.blue.shade50,
+                      Colors.blue,
+                    ),
 
                   // Items Section
-                  _sectionHeader('Items', trailing: isPending ? TextButton.icon(
-                    onPressed: _addItem,
-                    icon: const Icon(Icons.add_circle_outline, size: 20),
-                    label: const Text("Add More"),
-                  ) : null),
+                  _sectionHeader(
+                    'Items',
+                    trailing: isPending
+                        ? TextButton.icon(
+                            onPressed: _addItem,
+                            icon: const Icon(
+                              Icons.add_circle_outline,
+                              size: 20,
+                            ),
+                            label: const Text("Add More"),
+                          )
+                        : null,
+                  ),
                   Card(
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: kBorder)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: kBorder),
+                    ),
                     child: ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _order.items.length,
-                      separatorBuilder: (_, __) => Divider(height: 1, color: kBorder),
+                      separatorBuilder: (_, __) =>
+                          Divider(height: 1, color: kBorder),
                       itemBuilder: (_, i) {
                         final it = _order.items[i];
                         return Padding(
@@ -227,42 +275,88 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             children: [
                               // Product Image
                               Container(
-                                width: 50, height: 50,
+                                width: 50,
+                                height: 50,
                                 decoration: BoxDecoration(
                                   color: kBgBottom,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(color: kBorder),
                                 ),
-                                child: it.imageUrl != null 
-                                  ? ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network(it.imageUrl!, fit: BoxFit.cover))
-                                  : Icon(Icons.shopping_bag_outlined, color: kPrimary.withOpacity(0.5)),
+                                child: it.imageUrl != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          it.imageUrl!,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.shopping_bag_outlined,
+                                        color: kPrimary.withOpacity(0.5),
+                                      ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(it.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                    if (!isPending) Text('₹${it.unitPrice} x ${it.qty}', style: TextStyle(color: kTextPrimary.withOpacity(0.6), fontSize: 13)),
+                                    Text(
+                                      it.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    if (!isPending)
+                                      Text(
+                                        '₹${it.unitPrice} x ${it.qty}',
+                                        style: TextStyle(
+                                          color: kTextPrimary.withOpacity(0.6),
+                                          fontSize: 13,
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
                               if (isPending) ...[
                                 Row(
                                   children: [
-                                    _circleBtn(Icons.remove, () => _updateQty(it.id, it.qty - 1)),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                                      child: Text('${it.qty}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                    _circleBtn(
+                                      Icons.remove,
+                                      () => _updateQty(it.id, it.qty - 1),
                                     ),
-                                    _circleBtn(Icons.add, () => _updateQty(it.id, it.qty + 1)),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                      ),
+                                      child: Text(
+                                        '${it.qty}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    _circleBtn(
+                                      Icons.add,
+                                      () => _updateQty(it.id, it.qty + 1),
+                                    ),
                                     const SizedBox(width: 8),
-                                    _circleBtn(Icons.delete_outline, () => _removeItem(it.id), isDel: true),
+                                    _circleBtn(
+                                      Icons.delete_outline,
+                                      () => _removeItem(it.id),
+                                      isDel: true,
+                                    ),
                                   ],
-                                )
+                                ),
                               ] else ...[
-                                Text('₹${it.lineTotal.toStringAsFixed(1)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                              ]
+                                Text(
+                                  '₹${it.lineTotal.toStringAsFixed(1)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         );
@@ -275,19 +369,28 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   _sectionHeader('Order Summary'),
                   Card(
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: kBorder)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: kBorder),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          _summaryRow('Total Amount', isPending ? 'TBD' : '₹${_order.totalAmount.toStringAsFixed(2)}', isBold: true),
+                          _summaryRow(
+                            'Total Amount',
+                            isPending
+                                ? 'TBD'
+                                : '₹${_order.totalAmount.toStringAsFixed(2)}',
+                            isBold: true,
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Actions
                   if (isPending)
                     SizedBox(
@@ -300,11 +403,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           foregroundColor: Colors.red,
                           side: const BorderSide(color: Colors.red),
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  
+
                   if (isConfirmed)
                     SizedBox(
                       width: double.infinity,
@@ -314,11 +419,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         label: const Text("PROCEED TO PAY"),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  
+
                   const SizedBox(height: 100),
                 ],
               ),
@@ -332,12 +439,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget _statusIcon(String status) {
     IconData icon;
     Color color = Colors.white;
-    switch(status.toUpperCase()) {
-      case 'PENDING': icon = Icons.timer_outlined; break;
-      case 'CONFIRMED': icon = Icons.check_circle_outline; break;
-      case 'READY': icon = Icons.shopping_bag_outlined; break;
-      case 'DELIVERED': icon = Icons.home_outlined; break;
-      default: icon = Icons.receipt_long;
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        icon = Icons.timer_outlined;
+        break;
+      case 'CONFIRMED':
+        icon = Icons.check_circle_outline;
+        break;
+      case 'READY':
+        icon = Icons.shopping_bag_outlined;
+        break;
+      case 'DELIVERED':
+        icon = Icons.home_outlined;
+        break;
+      default:
+        icon = Icons.receipt_long;
     }
     return Icon(icon, color: color, size: 64);
   }
@@ -346,12 +462,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     width: double.infinity,
     margin: const EdgeInsets.only(bottom: 16),
     padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12), border: Border.all(color: textCol.withOpacity(0.2))),
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: textCol.withOpacity(0.2)),
+    ),
     child: Row(
       children: [
         Icon(Icons.info_rounded, color: textCol, size: 20),
         const SizedBox(width: 12),
-        Expanded(child: Text(text, style: TextStyle(color: textCol, fontWeight: FontWeight.bold))),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(color: textCol, fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     ),
   );
@@ -361,7 +486,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: kTextPrimary)),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: kTextPrimary,
+          ),
+        ),
         if (trailing != null) trailing,
       ],
     ),
@@ -370,26 +502,37 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget _summaryRow(String label, String value, {bool isBold = false}) => Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(label, style: TextStyle(color: kTextPrimary.withOpacity(0.6), fontSize: 15)),
-      Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.w900 : FontWeight.w600, fontSize: isBold ? 18 : 15, color: kTextPrimary)),
+      Text(
+        label,
+        style: TextStyle(color: kTextPrimary.withOpacity(0.6), fontSize: 15),
+      ),
+      Text(
+        value,
+        style: TextStyle(
+          fontWeight: isBold ? FontWeight.w900 : FontWeight.w600,
+          fontSize: isBold ? 18 : 15,
+          color: kTextPrimary,
+        ),
+      ),
     ],
   );
 
-  Widget _circleBtn(IconData icon, VoidCallback? onTap, {bool isDel = false}) => Material(
-    color: isDel ? Colors.red.withOpacity(0.1) : kPrimary.withOpacity(0.1),
-    shape: const CircleBorder(),
-    child: InkWell(
-      onTap: _isUpdating ? null : onTap,
-      customBorder: const CircleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.all(6.0),
-        child: Icon(icon, size: 18, color: isDel ? Colors.red : kPrimary),
-      ),
-    ),
-  );
+  Widget _circleBtn(IconData icon, VoidCallback? onTap, {bool isDel = false}) =>
+      Material(
+        color: isDel ? Colors.red.withOpacity(0.1) : kPrimary.withOpacity(0.1),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: _isUpdating ? null : onTap,
+          customBorder: const CircleBorder(),
+          child: Padding(
+            padding: const EdgeInsets.all(6.0),
+            child: Icon(icon, size: 18, color: isDel ? Colors.red : kPrimary),
+          ),
+        ),
+      );
 
   void _showPaymentInfo(BuildContext context, MyOrder order) {
-     showModalBottomSheet(
+    showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => SafeArea(
@@ -398,9 +541,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Make Payment", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                "Make Payment",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
-              Text("Total Amount: ₹ ${order.totalAmount.toStringAsFixed(2)}", style: const TextStyle(fontSize: 18)),
+              Text(
+                "Total Amount: ₹ ${order.totalAmount.toStringAsFixed(2)}",
+                style: const TextStyle(fontSize: 18),
+              ),
               const SizedBox(height: 20),
               Center(
                 child: ClipRRect(
@@ -410,24 +559,80 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     width: 250,
                     height: 250,
                     fit: BoxFit.cover,
-                    errorBuilder: (_,__,___) => const SizedBox(height: 250, child: Center(child: Text("QR Code not found"))),
+                    errorBuilder: (_, __, ___) => const SizedBox(
+                      height: 250,
+                      child: Center(child: Text("QR Code not found")),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text("Scan QR to pay", style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                "Scan QR to pay",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
-              SelectableText("UPI ID: yespay.rsbsdbconsumer1@yesbankltd", style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.w500)),
+              _CopyableRow(label: "UPI ID", value: "paytmqr6jkklj@ptys"),
               const SizedBox(height: 4),
-              Text("Bank: THE RADHASOAMI URBAN COOP BANK LTD.", style: TextStyle(color: Colors.grey[700], fontSize: 12), textAlign: TextAlign.center),
+              _CopyableRow(label: "Phone", value: "8279379620"),
+              const SizedBox(height: 4),
+              Text(
+                "Bank: DAYALBAGH CONSUMER",
+                style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 20),
-              const Text("After payment, the admin will verify and process your order.", textAlign: TextAlign.center,),
+              const Text(
+                "After payment, the admin will verify and process your order.",
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 20),
-              SizedBox(width: double.infinity, child: FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text("Done")))
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("Done"),
+                ),
+              ),
             ],
           ),
         ),
-      )
+      ),
+    );
+  }
+}
+
+class _CopyableRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _CopyableRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "$label: $value",
+          style: TextStyle(
+            color: Colors.grey[800],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.copy, size: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          constraints: const BoxConstraints(),
+          onPressed: () async {
+            await Clipboard.setData(ClipboardData(text: value));
+            if (context.mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('$label copied')));
+            }
+          },
+        ),
+      ],
     );
   }
 }

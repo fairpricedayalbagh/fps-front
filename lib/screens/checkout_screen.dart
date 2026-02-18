@@ -468,7 +468,11 @@ class _LabeledRow extends StatelessWidget {
   final String label;
   final String value;
   final bool copyable;
-  const _LabeledRow({required this.label, required this.value});
+  const _LabeledRow({
+    required this.label,
+    required this.value,
+    this.copyable = false,
+  });
 
   @override
   Widget build(BuildContext context) {
