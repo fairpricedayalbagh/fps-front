@@ -7,8 +7,36 @@ import '../providers/provider.dart';
 
 enum PaymentMethod { cod, online }
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget {
   const CartPage({super.key});
+
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Reload cart from prefs whenever this page is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<CartProvider>().reload();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      context.read<CartProvider>().reload();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

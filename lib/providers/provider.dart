@@ -350,6 +350,10 @@ class CartProvider extends ChangeNotifier {
   }
 
   // ---- Persistence ----
+
+  /// Re-reads cart from SharedPreferences (call when page is reopened/foregrounded).
+  Future<void> reload() => _loadFromPrefs();
+
   Future<void> _loadFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();

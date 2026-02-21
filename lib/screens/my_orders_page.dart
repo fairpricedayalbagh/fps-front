@@ -219,7 +219,8 @@ class MyOrdersPage extends StatefulWidget {
   State<MyOrdersPage> createState() => _MyOrdersPageState();
 }
 
-class _MyOrdersPageState extends State<MyOrdersPage> {
+class _MyOrdersPageState extends State<MyOrdersPage>
+    with WidgetsBindingObserver {
   bool _loading = true;
   String? _error;
   List<MyOrder> _orders = [];
@@ -229,7 +230,21 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _bootstrap();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_fetchOrders(fromUser: false, force: true));
+    }
   }
 
   Future<void> _bootstrap() async {

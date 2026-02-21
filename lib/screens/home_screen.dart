@@ -76,6 +76,7 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'cart_screen.dart';
 import 'profile_screen.dart';
@@ -84,6 +85,7 @@ import 'menu_drawer.dart';
 import 'my_orders_page.dart'; // <-- added
 import '../theme/palette.dart';
 import '../main.dart';
+import '../providers/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -122,17 +124,26 @@ class _HomePageState extends State<HomePage> {
         selectedItemColor: kPrimary, // ← palette
         unselectedItemColor: kTextPrimary.withOpacity(0.55), // ← palette
         backgroundColor: kBgBottom, // ← palette
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          const BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long),
-            label: 'my orders',
+            label: 'My Orders',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined),
+            icon: Consumer<CartProvider>(
+              builder: (_, cart, __) => Badge.count(
+                count: cart.itemCount,
+                isLabelVisible: cart.itemCount > 0,
+                child: const Icon(Icons.shopping_cart_outlined),
+              ),
+            ),
             label: 'Cart',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             label: 'Profile',
           ),

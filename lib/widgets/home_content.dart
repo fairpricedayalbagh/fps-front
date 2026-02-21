@@ -3882,6 +3882,9 @@ class _HomeContentState extends State<HomeContent>
   ValueNotifier<int> _vnFor(Product p) =>
       _qtyVN.putIfAbsent(p.id, () => ValueNotifier(_qty[p.id] ?? 0));
 
+  // keep a ref to CartProvider so we can remove the listener in dispose
+  CartProvider? _cartProvider;
+
   // dynamic categories from backend data
   late List<_CategoryInfo> _categories = [];
 
@@ -3893,14 +3896,47 @@ class _HomeContentState extends State<HomeContent>
   @override
   void initState() {
     super.initState();
+    // Sync _qty from CartProvider after first frame so context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _cartProvider = context.read<CartProvider>();
+      _syncQtyFromCart(_cartProvider!);
+      _cartProvider!.addListener(_onCartChanged);
+    });
     _bootstrap();
   }
 
   @override
   void dispose() {
+    _cartProvider?.removeListener(_onCartChanged);
     _searchDebounce?.cancel();
     _searchCtrl.dispose();
     super.dispose();
+  }
+
+  /// Called whenever CartProvider notifies a change (e.g. item removed from Cart tab).
+  void _onCartChanged() {
+    if (!mounted) return;
+    _syncQtyFromCart(context.read<CartProvider>());
+  }
+
+  /// Sync local _qty map and ValueNotifiers to match CartProvider state.
+  void _syncQtyFromCart(CartProvider cart) {
+    final cartIds = <int>{};
+    for (final line in cart.lines.values) {
+      final id = int.tryParse(line.productId);
+      if (id == null) continue;
+      cartIds.add(id);
+      _qty[id] = line.qty;
+      if (_qtyVN.containsKey(id)) _qtyVN[id]!.value = line.qty;
+    }
+    // Clear entries for products no longer in cart
+    for (final id in List.of(_qty.keys)) {
+      if (!cartIds.contains(id)) {
+        _qty.remove(id);
+        if (_qtyVN.containsKey(id)) _qtyVN[id]!.value = 0;
+      }
+    }
   }
 
   Future<void> _bootstrap() async {
